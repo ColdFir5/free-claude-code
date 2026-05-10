@@ -110,19 +110,11 @@ In the Admin UI, paste your provider key, set `MODEL`, set `ANTHROPIC_AUTH_TOKEN
 
 ### 7. Run Claude Code
 
-Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Use the same `ANTHROPIC_AUTH_TOKEN` you configured in the Admin UI.
-
-PowerShell:
-
-```powershell
-$env:ANTHROPIC_AUTH_TOKEN="freecc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
-```
-
-Bash:
-
 ```bash
-ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
+fcc-claude
 ```
+
+`fcc-claude` reads the current configured port and auth token each time it starts, sets the Claude Code environment variables, and then launches the real `claude` command.
 
 ## Local Admin UI
 
@@ -309,6 +301,16 @@ MODEL="wafer/DeepSeek-V4-Pro"
 
 ### Claude Code CLI
 
+For terminal use, prefer the installed launcher:
+
+```bash
+fcc-claude
+```
+
+It points Claude Code at the configured local proxy and refreshes the port/token from config on every new launch. If you change `PORT`, restart `free-claude-code` before opening a new Claude Code session.
+
+For manual setup, point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Use the same `ANTHROPIC_AUTH_TOKEN` you configured in the Admin UI.
+
 ```bash
 ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
 ```
@@ -356,7 +358,7 @@ Start Claude Code with that variable set (see [Run Claude Code](#7-run-claude-co
   <img src="assets/cc-model-picker.png" alt="Claude Code model picker showing gateway models" width="700">
 </div>
 
-The proxy lists models for configured provider keys and referenced local providers. Picker-safe IDs are routed back to the real provider/model automatically, so no `.env` edit or separate launcher script is needed after startup.
+The proxy lists models for configured provider keys and referenced local providers. Picker-safe IDs are routed back to the real provider/model automatically, so no `.env` edit is needed after startup.
 
 Each provider model also has a `(no thinking)` picker variant. Use it when a model does not support Claude Code thinking or fails with adaptive-thinking requests. It routes to the same upstream model while asking Claude Code to send a non-thinking request.
 
@@ -604,6 +606,7 @@ Run them in that order before pushing. CI enforces the same checks.
 
 - `free-claude-code`: starts the proxy with configured host and port.
 - `fcc-init`: optional file-based config scaffold at `~/.config/free-claude-code/.env`.
+- `fcc-claude`: launches Claude Code with the configured local proxy URL, auth token, and model discovery flag.
 
 ### Extending
 
