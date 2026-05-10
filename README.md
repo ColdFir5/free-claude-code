@@ -48,7 +48,7 @@ Free Claude Code routes Anthropic Messages API traffic from Claude Code to NVIDI
 
 ## Quick Start
 
-### 1. Install [Claude Code](https://code.claude.com/docs/en/overview)
+### 1. Install the latest version of [Claude Code](https://code.claude.com/docs/en/overview)
 
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -56,7 +56,7 @@ npm install -g @anthropic-ai/claude-code
 
 ### 2. Install Runtime Requirements
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.14.
+Install the latest version of [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.14.
 
 macOS/Linux:
 
