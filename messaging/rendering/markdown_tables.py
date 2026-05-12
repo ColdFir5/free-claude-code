@@ -20,6 +20,8 @@ def _is_gfm_table_header_line(line: str) -> bool:
 
 def normalize_gfm_tables(text: str) -> str:
     """Insert blank lines before detected tables outside fenced code blocks."""
+    if "|" not in text:
+        return text
     lines = text.splitlines()
     if len(lines) < 2:
         return text

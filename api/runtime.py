@@ -158,24 +158,33 @@ class AppRuntime:
                     )
 
         logger.info("Shutdown requested, cleaning up...")
+        shutdown_steps = []
         if self.messaging_platform:
-            await best_effort(
-                "messaging_platform.stop",
-                self.messaging_platform.stop(),
-                log_verbose_errors=verbose,
+            shutdown_steps.append(
+                best_effort(
+                    "messaging_platform.stop",
+                    self.messaging_platform.stop(),
+                    log_verbose_errors=verbose,
+                )
             )
         if self.cli_manager:
-            await best_effort(
-                "cli_manager.stop_all",
-                self.cli_manager.stop_all(),
-                log_verbose_errors=verbose,
+            shutdown_steps.append(
+                best_effort(
+                    "cli_manager.stop_all",
+                    self.cli_manager.stop_all(),
+                    log_verbose_errors=verbose,
+                )
             )
         if self._provider_registry is not None:
-            await best_effort(
-                "provider_registry.cleanup",
-                self._provider_registry.cleanup(),
-                log_verbose_errors=verbose,
+            shutdown_steps.append(
+                best_effort(
+                    "provider_registry.cleanup",
+                    self._provider_registry.cleanup(),
+                    log_verbose_errors=verbose,
+                )
             )
+        if shutdown_steps:
+            await asyncio.gather(*shutdown_steps)
         await self._shutdown_limiter()
         logger.info("Server shut down cleanly")
 

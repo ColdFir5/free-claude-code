@@ -3,6 +3,7 @@ Discord Platform Adapter
 
 Implements MessagingPlatform for Discord using discord.py.
 """
+from __future__ import annotations
 
 import asyncio
 import contextlib
@@ -449,15 +450,14 @@ class DiscordPlatform(MessagingPlatform):
         if not channel or not hasattr(channel, "fetch_message"):
             raise RuntimeError(f"Channel {chat_id} not found")
 
-        discord = _get_discord()
         channel = cast(Any, channel)
+        discord = _get_discord()
+        text = self._truncate(text)
         try:
             msg = await channel.fetch_message(int(message_id))
+            await msg.edit(content=text)
         except discord.NotFound:
             return
-
-        text = self._truncate(text)
-        await msg.edit(content=text)
 
     async def delete_message(
         self,

@@ -349,7 +349,7 @@ class SSEBuilder:
 
     def close_all_blocks(self) -> Iterator[str]:
         yield from self.close_content_blocks()
-        for tool_index, state in list(self.blocks.tool_states.items()):
+        for tool_index, state in self.blocks.tool_states.items():
             if state.started:
                 yield self.stop_tool_block(tool_index)
 

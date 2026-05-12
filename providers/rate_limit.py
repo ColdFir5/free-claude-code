@@ -151,9 +151,16 @@ class GlobalRateLimiter:
         cls._instance = None
         cls._scoped_instances = {}
 
-    async def wait_if_blocked(self) -> bool:
+    async def wait_if_blocked(
+        self, *, acquire_proactive: bool = True
+    ) -> bool:
         """
         Wait if currently rate limited or throttle to meet quota.
+
+        Args:
+            acquire_proactive: Whether to acquire a proactive throttling slot.
+                Set to False for retry attempts (failed requests shouldn't consume
+                quota).
 
         Returns:
             True if was reactively blocked and waited, False otherwise.
@@ -170,7 +177,8 @@ class GlobalRateLimiter:
             waited_reactively = True
 
         # 2. Proactive check: strict rolling window (no bursts beyond N in last W seconds)
-        await self._acquire_proactive_slot()
+        if acquire_proactive:
+            await self._acquire_proactive_slot()
         return waited_reactively
 
     async def _acquire_proactive_slot(self) -> None:
@@ -255,7 +263,9 @@ class GlobalRateLimiter:
         total_attempts = 1 + max_retries
 
         for attempt in range(total_attempts):
-            await self.wait_if_blocked()
+            # Only acquire a proactive slot on the first attempt; retries are
+            # already spaced by reactive backoff and should not consume quota.
+            await self.wait_if_blocked(acquire_proactive=(attempt == 0))
 
             try:
                 return await fn(*args, **kwargs)

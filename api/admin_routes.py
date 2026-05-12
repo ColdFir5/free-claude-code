@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import ipaddress
 from pathlib import Path
@@ -162,11 +163,17 @@ async def local_provider_status(request: Request):
     require_loopback_admin(request)
     config = load_config_response()
     values = {field["key"]: field["value"] for field in config["fields"]}
-    checks = []
-    for provider_id, path in LOCAL_PROVIDER_PATHS.items():
-        base_url = _local_provider_url(provider_id, values)
-        checks.append(await _check_local_provider(provider_id, base_url, path))
-    return {"providers": checks}
+    checks = await asyncio.gather(
+        *(
+            _check_local_provider(
+                provider_id,
+                _local_provider_url(provider_id, values),
+                path,
+            )
+            for provider_id, path in LOCAL_PROVIDER_PATHS.items()
+        )
+    )
+    return {"providers": list(checks)}
 
 
 @router.post("/admin/api/providers/{provider_id}/test")

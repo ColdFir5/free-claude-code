@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from collections import deque
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any
@@ -549,17 +548,25 @@ class TranscriptBuffer:
         if len(candidate) <= limit_chars:
             return candidate
 
-        # Drop oldest segments until under limit (keep the tail).
-        # Use deque for O(1) popleft; list.pop(0) would be O(n) per iteration.
-        parts: deque[str] = deque(rendered)
-        dropped = False
-        last_part: str | None = None
-        while parts:
-            candidate = _join(parts, add_marker=True)
-            if len(candidate) <= limit_chars:
-                return candidate
-            last_part = parts.popleft()
-            dropped = True
+        # Binary search for the oldest segment to keep so we avoid O(n)
+        # string re-joins from dropping one segment at a time.
+        parts: list[str] = rendered
+        lo, hi = 0, len(parts)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if (
+                len(_join(parts[mid:], add_marker=(mid > 0)))
+                <= limit_chars
+            ):
+                hi = mid
+            else:
+                lo = mid + 1
+
+        dropped = lo > 0
+        last_part: str | None = parts[lo - 1] if lo > 0 else None
+
+        if lo < len(parts):
+            return _join(parts[lo:], add_marker=True)
 
         # Nothing fits - preserve tail of last segment instead of only marker+status.
         if dropped and last_part:

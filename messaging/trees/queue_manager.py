@@ -1,4 +1,5 @@
 """Tree-based message queue: index, async node processor, and public manager API."""
+from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
@@ -174,7 +175,7 @@ class TreeRepository:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> TreeRepository:
+    def from_dict(cls, data: dict) -> "TreeRepository":
         """Deserialize from dictionary."""
         repo = cls()
         for root_id, tree_data in data.get("trees", {}).items():

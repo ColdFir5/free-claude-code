@@ -4,6 +4,7 @@ Session Store for Messaging Platforms
 Provides persistent storage for mapping platform messages to Claude CLI session IDs
 and message trees for conversation continuation.
 """
+from __future__ import annotations
 
 import contextlib
 import json

@@ -168,9 +168,17 @@ def launch_claude(argv: Sequence[str] | None = None) -> None:
 
     command = [claude_command, *args]
     env = _claude_child_env(settings, os.environ)
+
+    cwd = os.environ.get("FCC_ORIGINAL_DIR")
+    popen_kwargs: dict = {}
+    if cwd:
+        cwd = os.path.abspath(cwd)
+        if os.path.isdir(cwd):
+            popen_kwargs["cwd"] = cwd
+
     process: subprocess.Popen[bytes] | None = None
     try:
-        process = subprocess.Popen(command, env=env)
+        process = subprocess.Popen(command, env=env, **popen_kwargs)
         if process.pid:
             register_pid(process.pid)
         return_code = process.wait()
