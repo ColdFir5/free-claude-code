@@ -177,7 +177,7 @@ Browse [all models](https://openrouter.ai/models) or [free models](https://openr
 
 Get a key at [platform.deepseek.com/api_keys](https://platform.deepseek.com/api_keys).
 
-In the Admin UI, paste it into `DEEPSEEK_API_KEY`, then set `MODEL` to a DeepSeek slug such as `deepseek/deepseek-chat`.
+In the Admin UI, paste it into `DEEPSEEK_API_KEY`, then set `MODEL` to a DeepSeek slug such as `deepseek/deepseek-v4-pro`.
 
 This provider uses DeepSeek's Anthropic-compatible endpoint, not the OpenAI chat-completions endpoint.
 
