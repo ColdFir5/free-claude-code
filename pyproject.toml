@@ -23,6 +23,8 @@ dependencies = [
     "loguru>=0.7.0",
     "aiohttp>=3.13.4",
     "pydantic-core>=2.46.4",
+    "Pillow>=11.0.0",
+    "pywin32>=310; sys_platform == 'win32'",
 ]
 
 [project.scripts]
@@ -30,6 +32,7 @@ fcc-server = "cli.entrypoints:serve"
 free-claude-code = "cli.entrypoints:serve"
 fcc-init = "cli.entrypoints:init"
 fcc-claude = "cli.entrypoints:launch_claude"
+fcc-paste = "cli.paste:main"
 
 [project.optional-dependencies]
 voice = [
