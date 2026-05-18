@@ -27,6 +27,35 @@ PROXY_PREFLIGHT_PATH = "/health"
 PROXY_PREFLIGHT_TIMEOUT_SECONDS = 1.5
 SERVER_GRACEFUL_SHUTDOWN_SECONDS = 5
 
+CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
+
+
+def _project_hash(path: str) -> str:
+    """Compute the Claude Code project-directory name from an absolute path."""
+    return os.path.abspath(path).replace(":", "-").replace("\\", "-").replace(" ", "-")
+
+
+def _latest_session_id(project_dir: Path) -> str | None:
+    """Return the stem of the most recently modified .jsonl session file."""
+    if not project_dir.is_dir():
+        return None
+    jsonl_files = [f for f in project_dir.glob("*.jsonl") if f.is_file()]
+    if not jsonl_files:
+        return None
+    return max(jsonl_files, key=lambda f: f.stat().st_mtime).stem
+
+
+def _print_resume_hint(cwd: str | None) -> None:
+    """Print a resume command using the most recent session in this project."""
+    project_path = os.path.abspath(cwd) if cwd else os.getcwd()
+    project_dir = CLAUDE_PROJECTS_DIR / _project_hash(project_path)
+    session_id = _latest_session_id(project_dir)
+    if not session_id:
+        return
+    print()
+    print("\x1b[7m  Resume:  ds --resume {:<47} \x1b[0m".format(session_id))
+    print()
+
 
 def _load_env_template() -> str:
     """Load the canonical root env template from package resources or source."""
@@ -117,6 +146,13 @@ def _claude_child_env(
     env["CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"] = "1"
     if token := settings.anthropic_auth_token.strip():
         env["ANTHROPIC_AUTH_TOKEN"] = token
+
+    # Ensure project venv Scripts are on PATH so fcc-paste is callable from
+    # within Claude Code sessions via !fcc-paste.
+    venv_scripts = Path(sys.executable).parent
+    existing_path = env.get("PATH", "")
+    env["PATH"] = f"{venv_scripts};{existing_path}"
+
     return env
 
 
@@ -181,7 +217,12 @@ def launch_claude(argv: Sequence[str] | None = None) -> None:
         process = subprocess.Popen(command, env=env, **popen_kwargs)
         if process.pid:
             register_pid(process.pid)
-        return_code = process.wait()
+        while True:
+            try:
+                return_code = process.wait(timeout=0.25)
+                break
+            except subprocess.TimeoutExpired:
+                pass
     except FileNotFoundError:
         print(
             f"Could not find Claude Code command: {settings.claude_cli_bin}",
@@ -196,9 +237,11 @@ def launch_claude(argv: Sequence[str] | None = None) -> None:
         if process is not None and process.pid:
             kill_pid_tree_best_effort(process.pid)
             process.wait()
-        raise
+        _print_resume_hint(cwd)
+        raise SystemExit(130) from None
     finally:
         if process is not None and process.pid:
             unregister_pid(process.pid)
 
+    _print_resume_hint(cwd)
     raise SystemExit(return_code)

@@ -50,7 +50,7 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_attr="nvidia_nim_api_key",
         default_base_url=NVIDIA_NIM_DEFAULT_BASE,
         proxy_attr="nvidia_nim_proxy",
-        capabilities=("chat", "streaming", "tools", "thinking", "rate_limit"),
+        capabilities=("chat", "streaming", "tools", "thinking", "rate_limit", "vision"),
     ),
     "open_router": ProviderDescriptor(
         provider_id="open_router",
@@ -112,7 +112,7 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_attr="kimi_api_key",
         default_base_url=KIMI_DEFAULT_BASE,
         proxy_attr="kimi_proxy",
-        capabilities=("chat", "streaming", "tools"),
+        capabilities=("chat", "streaming", "tools", "vision"),
     ),
     "wafer": ProviderDescriptor(
         provider_id="wafer",

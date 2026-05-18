@@ -25,4 +25,4 @@ if errorlevel 1 (
 :launch
 
 echo Proxy is ready! Launching Claude Code (skip permissions)...
-uv run python -c "from cli.entrypoints import launch_claude; launch_claude(['--dangerously-skip-permissions'])"
+uv run python -c "import sys; from cli.entrypoints import launch_claude; launch_claude(['--dangerously-skip-permissions'] + sys.argv[1:])" %*
